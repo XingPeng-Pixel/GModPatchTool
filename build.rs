@@ -11,7 +11,7 @@ fn main() -> io::Result<()> {
 		file.read_exact(&mut buffer)?;
 	}
 	if buffer.starts_with(b"version ") {
-		println!("cargo::error=LFS files have not been checked out properly");
+		println!("cargo::error=LFS 文件未正确检出");
 	}
 
 	#[cfg(target_os = "windows")]

@@ -15,17 +15,17 @@ const ABOUT: &str = r#"   ________  ___          ______        __       __  ____
  / / __/ /|_/ / __ \/ __  / /_/ / __ `/ __/ ___/ __ \/ / / __ \/ __ \/ /
 / /_/ / /  / / /_/ / /_/ / ____/ /_/ / /_/ /__/ / / / / / /_/ / /_/ / /
 \____/_/  /_/\____/\__,_/_/    \__,_/\__/\___/_/ /_/_/  \____/\____/_/
-GModPatchTool (formerly GModCEFCodecFix)
+GModPatchTool（原 GModCEFCodecFix）
 
 Copyright 2020-2026, Solstice Game Studios (solsticegamestudios.com)
 LICENSE: GNU General Public License v3.0
 
-Purpose: Patches Garry's Mod to Update/Improve Chromium Embedded Framework (CEF) and Fix common launch/performance issues (esp. on Linux/Proton/macOS).
+用途：修补 Garry's Mod，更新/改进 Chromium Embedded Framework（CEF），修复常见的启动和性能问题（尤其在 Linux/Proton/macOS 上）。
 
-Guide: https://solsticegamestudios.com/fixmedia/
-FAQ/Common Issues: https://solsticegamestudios.com/fixmedia/faq/
-Discord: https://solsticegamestudios.com/discord/
-Email: contact@solsticegamestudios.com
+使用指南：https://solsticegamestudios.com/fixmedia/
+常见问题：https://solsticegamestudios.com/fixmedia/faq/
+Discord 社区：https://solsticegamestudios.com/discord/
+联系邮箱：contact@solsticegamestudios.com
 "#;
 
 use std::path::{Path, PathBuf};
@@ -59,7 +59,7 @@ fn pathbuf_to_canonical_pathbuf(pathbuf: PathBuf, checkdirempty: bool) -> Result
 			if !checkdirempty || pathbuf_dir_not_empty(&pathbuf) {
 				Ok(pathbuf)
 			} else {
-				Err("Directory is empty".to_string())
+				Err("目录为空".to_string())
 			}
 		},
 		Err(error) => {
