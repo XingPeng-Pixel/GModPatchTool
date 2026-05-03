@@ -841,7 +841,7 @@ where
 
 		let mut secs_to_continue: u8 = 5;
 		while secs_to_continue > 0 {
-			terminal_write(writer, format!("\tContinuing in {secs_to_continue} second(s)...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
+			terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
 			writer().flush().unwrap();
 			tokio::time::sleep(time::Duration::from_secs(1)).await;
 			secs_to_continue -= 1;
@@ -866,7 +866,7 @@ where
 
 			let mut secs_to_continue: u8 = 10;
 			while secs_to_continue > 0 {
-				terminal_write(writer, format!("\tContinuing in {secs_to_continue} second(s)...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
+				terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
 				writer().flush().unwrap();
 				tokio::time::sleep(time::Duration::from_secs(1)).await;
 				secs_to_continue -= 1;
@@ -897,10 +897,15 @@ where
 
 		let mut secs_to_continue: u8 = 10;
 		while secs_to_continue > 0 {
-			terminal_write(writer, format!("\tContinuing in {secs_to_continue} second(s)...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
+			terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
 			writer().flush().unwrap();
 			tokio::time::sleep(time::Duration::from_secs(1)).await;
 			secs_to_continue -= 1;
+		}
+
+		// Clear continuing line
+		if writer_is_interactive {
+			terminal_write(writer, "\x1B[0K\n", false, None);
 		}
 
 		// Clear continuing line
@@ -1197,14 +1202,14 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 		let steam_config_str = tokio::fs::read_to_string(steam_config_path).await;
 
 		if steam_config_str.is_err() {
-			return Err(AlmightyError::Generic("Couldn't find Steam config.vdf. Have you ever launched/signed in to Steam?".to_string()));
+			return Err(AlmightyError::Generic("找不到 Steam config.vdf。你还没有登录过 Steam 吗？".to_string()));
 		}
 
 		let steam_config_str = steam_config_str.unwrap();
 		let steam_config = vdf::from_str(steam_config_str.as_str());
 
 		if steam_config.is_err() {
-			return Err(AlmightyError::Generic("Couldn't parse Steam config.vdf. Is the file corrupt?".to_string()));
+			return Err(AlmightyError::Generic("无法解析 Steam config.vdf。文件损坏了？".to_string()));
 		}
 
 		let steam_config: SteamConfig = steam_config.unwrap();
@@ -1223,7 +1228,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 		}
 	}
 
-	terminal_write(writer, format!("Target Platform: {platform_masked} ({gmod_compattool})\n").as_str(), true, None);
+	terminal_write(writer, format!("目标平台：{platform_masked}（{gmod_compattool}）\n").as_str(), true, None);
 
 	// Warn if -nochromium is in launch options
 	// Some GMod "menu error fix" guides include it + gmod-lua-menu
@@ -1231,7 +1236,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	let steam_user_localconfig_str = tokio::fs::read_to_string(steam_user_localconfig_path).await;
 
 	if let Err(error) = steam_user_localconfig_str {
-		return Err(AlmightyError::Generic(format!("Couldn't find/read Steam localconfig.vdf. Have you ever launched/signed in to Steam?\n\t{error}")));
+		return Err(AlmightyError::Generic(format!("找不到/无法读取 Steam localconfig.vdf。你还没有登录过 Steam 吗？\n\t{error}")));
 	}
 
 	// HACK: Rip out the "WebStorage" section to mitigate stack overflow issues
@@ -1273,7 +1278,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	let steam_user_localconfig = vdf::from_str(steam_user_localconfig_str.as_str());
 
 	if let Err(error) = steam_user_localconfig {
-		return Err(AlmightyError::Generic(format!("Couldn't parse Steam localconfig.vdf. Is the file corrupt?\n\t{error}")));
+		return Err(AlmightyError::Generic(format!("无法解析 Steam localconfig.vdf。文件损坏了？\n\t{error}")));
 	}
 
 	let steam_user_localconfig: SteamUserLocalConfig = steam_user_localconfig.unwrap();
@@ -1282,11 +1287,11 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	if let Some(steam_user_localconfig_gmod) = steam_user_localconfig_gmod {
 		if let Some(steam_user_localconfig_gmod_launchopts) = &steam_user_localconfig_gmod.launch_options {
 			if steam_user_localconfig_gmod_launchopts.contains("-nochromium") {
-				terminal_write(writer, "WARNING: -nochromium is in GMod's Launch Options! CEF will not work with this.\n\tPlease go to Steam > Garry's Mod > Properties > General and remove it.\n\tAdditionally, if you have gmod-lua-menu installed, uninstall it.", true, if writer_is_interactive { Some("yellow") } else { None });
+				terminal_write(writer, "警告：GMod 启动选项中包含 -nochromium！CEF 将无法正常工作。\n\t请前往 Steam > Garry's Mod > 属性 > 常规 中将其移除。\n\t另外，如果安装了 gmod-lua-menu，请一并卸载。", true, if writer_is_interactive { Some("yellow") } else { None });
 
 				let mut secs_to_continue: u8 = 5;
 				while secs_to_continue > 0 {
-					terminal_write(writer, format!("\tContinuing in {secs_to_continue} second(s)...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
+					terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(), false, if writer_is_interactive { Some("yellow") } else { None });
 					writer().flush().unwrap();
 					tokio::time::sleep(time::Duration::from_secs(1)).await;
 					secs_to_continue -= 1;
@@ -1299,37 +1304,37 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 			}
 		}
 	} else {
-		return Err(AlmightyError::Generic("Couldn't find Garry's Mod in user localconfig.vdf. Is Garry's Mod installed?".to_string()));
+		return Err(AlmightyError::Generic("在用户 localconfig.vdf 中找不到 Garry's Mod。Garry's Mod 已安装吗？".to_string()));
 	}
 
 	// Get remote manifest
-	terminal_write(writer, "Getting remote manifest...", true, None);
+	terminal_write(writer, "正在获取远程清单...", true, None);
 
 	let remote_manifest = get_http_response_json::<_, Manifest>(writer, writer_is_interactive, &TEXT_SERVER_ROOTS, "manifest.json").await;
 
 	if remote_manifest.is_none() {
 		terminal_write(writer, "", true, None); // Newline
-		return Err(AlmightyError::Generic("Couldn't get remote manifest. Please check your internet connection!".to_string()));
+		return Err(AlmightyError::Generic("无法获取远程清单。请检查网络连接！".to_string()));
 	}
 
 	let remote_manifest = remote_manifest.unwrap();
 
-	terminal_write(writer, "GModPatchTool Manifest Loaded!\n", true, None);
+	terminal_write(writer, "GModPatchTool 清单已加载！\n", true, None);
 
 	let platform_branches = remote_manifest.get(platform_masked);
 	if platform_branches.is_none() {
-		return Err(AlmightyError::Generic(format!("This operating system ({platform_masked}) is not supported!")));
+		return Err(AlmightyError::Generic(format!("不支持此操作系统（{platform_masked}）！")));
 	}
 
 	let platform_branch_files = platform_branches.unwrap().get(&gmod_branch);
 	if platform_branch_files.is_none() {
-		return Err(AlmightyError::Generic(format!("This Beta Branch of Garry's Mod ({gmod_branch}) is not supported! Please go to Steam > Garry's Mod > Properties > Betas, select the x86-64 beta, then try again.")));
+		return Err(AlmightyError::Generic(format!("不支持此 Garry's Mod 测试版分支（{gmod_branch}）！请前往 Steam > Garry's Mod > 属性 > 测试版，选择 x86-64 测试版，然后重试。")));
 	}
 
 	let platform_branch_files = platform_branch_files.unwrap();
 
 	// Determine file integrity status
-	terminal_write(writer, "Determining file integrity status...", true, None);
+	terminal_write(writer, "正在检测文件完整性状态...", true, None);
 
 	// TODO: phf_map for these
 	let integrity_status_strings = HashMap::from([
@@ -1345,7 +1350,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	.map(|(filename, hashes)| {
 		let integrity_result;
 		if args.no_sourcescheme && filename.ends_with(".res") {
-			terminal_write(writer, format!("\t{filename}: Skipping due to --no-sourcescheme").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+			terminal_write(writer, format!("\t{filename}：因 --no-sourcescheme 跳过").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 			integrity_result = Ok(IntegrityStatus::Fixed);
 		} else {
 			integrity_result = determine_file_integrity_status(gmod_path.clone(), filename, hashes);
@@ -1376,7 +1381,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 				}
 			},
 			Err(_) => {
-				return Err(AlmightyError::Generic("Failed to get integrity status of one or more files!".to_string()));
+				return Err(AlmightyError::Generic("无法获取一个或多个文件的完整性状态！".to_string()));
 			}
 		}
 	}
@@ -1395,10 +1400,10 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 			match old_cache_dir_result {
 				Ok(_) => {
-					terminal_write(writer,"Successfully removed old GModCEFCodecFix cache directory.", true, None);
+					terminal_write(writer,"已成功删除旧的 GModCEFCodecFix 缓存目录。", true, None);
 				},
 				Err(error) => {
-					terminal_write(writer, format!("Failed to remove old GModCEFCodecFix cache directory: {error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+					terminal_write(writer, format!("删除旧的 GModCEFCodecFix 缓存目录失败：{error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 				}
 			}
 		}
@@ -1415,10 +1420,10 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 				match remove_result {
 					Ok(_) => {
-						terminal_write(writer,"\n[disable-cache:Pre] Successfully cleared GModPatchTool cache directory.", true, None);
-					},
-					Err(error) => {
-						terminal_write(writer, format!("\n[disable-cache:Pre] Failed to clear GModPatchTool cache directory: {error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+					terminal_write(writer,"\n[disable-cache:预] 已成功清空 GModPatchTool 缓存目录。", true, None);
+				},
+				Err(error) => {
+					terminal_write(writer, format!("\n[disable-cache:预] 清空 GModPatchTool 缓存目录失败：{error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 					}
 				}
 			}
@@ -1436,16 +1441,16 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 		// Can't access or create the cache directory!
 		if let Err(error) = cache_dir {
-			return Err(AlmightyError::Generic(format!("Failed to create cache directory ({error}):\n\t{cache_path_str}")));
+			return Err(AlmightyError::Generic(format!("无法创建缓存目录（{error}）：\n\t{cache_path_str}")));
 		}
 
 		let cache_dir = cache_dir.unwrap();
 		cache_path_str = cache_dir.to_string_lossy();
 
-		terminal_write(writer, format!("\nGModPatchTool Cache Directory: {cache_path_str}\n").as_str(), true, None);
+		terminal_write(writer, format!("\nGModPatchTool 缓存目录：{cache_path_str}\n").as_str(), true, None);
 
 		// Download what we need
-		terminal_write(writer, "Downloading patch files...", true, None);
+		terminal_write(writer, "正在下载补丁文件...", true, None);
 
 		let mut download_futures = JoinSet::new();
 		for (filename, integrity_status, hashes) in &pending_files {
@@ -1462,12 +1467,12 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 		while let Some(download_result) = download_futures.join_next().await {
 			if download_result.is_err() {
-				return Err(AlmightyError::Generic("Failed to download one or more patch files!".to_string()));
+				return Err(AlmightyError::Generic("下载一个或多个补丁文件失败！".to_string()));
 			}
 		}
 
 		// Patch the files
-		terminal_write(writer, format!("\nPatching {pending_files_len} file(s)...").as_str(), true, None);
+		terminal_write(writer, format!("\n正在修补 {pending_files_len} 个文件...").as_str(), true, None);
 
 		// TODO: Early exit if any patches fail
 		let patch_results: Vec<(&String, IntegrityStatus)> = pending_files.par_iter()
@@ -1490,7 +1495,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 		for (_, integrity_status) in patch_results {
 			if integrity_status != IntegrityStatus::Fixed {
-				return Err(AlmightyError::Generic("Failed to patch one or more files!".to_string()));
+				return Err(AlmightyError::Generic("修补一个或多个文件失败！".to_string()));
 			}
 		}
 
@@ -1499,15 +1504,15 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 
 			match remove_result {
 				Ok(_) => {
-					terminal_write(writer,"\n[disable-cache:Post] Successfully cleared GModPatchTool cache directory.", true, None);
+					terminal_write(writer,"\n[disable-cache:后] 已成功清空 GModPatchTool 缓存目录。", true, None);
 				},
 				Err(error) => {
-					terminal_write(writer, format!("\n[disable-cache:Post] Failed to clear GModPatchTool cache directory: {error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+					terminal_write(writer, format!("\n[disable-cache:后] 清空 GModPatchTool 缓存目录失败：{error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 				}
 			}
 		}
 	} else {
-		terminal_write(writer, "No files need patching!", true, None);
+		terminal_write(writer, "无需修补任何文件！", true, None);
 	}
 
 	// Make sure executables are executable on Linux and macOS
@@ -1516,7 +1521,7 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	// https://github.com/solsticegamestudios/GModPatchTool/issues/161
 	#[cfg(unix)]
 	{
-		terminal_write(writer, "\nApplying file permissions...", true, None);
+		terminal_write(writer, "\n正在应用文件权限...", true, None);
 
 		for (filename, fileinfo) in platform_branch_files {
 			let executable = fileinfo.get("executable");
@@ -1541,13 +1546,13 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 										terminal_write(writer, format!("\t{filename}").as_str(), true, None);
 									},
 									Err(error) => {
-										terminal_write(writer, format!("\tFailed to Apply Permissions: {filename} | {error}").as_str(), true, if writer_is_interactive { Some("red") } else { None });
+										terminal_write(writer, format!("\t应用权限失败：{filename} | {error}").as_str(), true, if writer_is_interactive { Some("red") } else { None });
 										// TODO: Fatal?
 									}
 								}
 							},
 							Err(error) => {
-								terminal_write(writer, format!("\tFailed to Apply Permissions: {filename} | {error}").as_str(), true, if writer_is_interactive { Some("red") } else { None });
+								terminal_write(writer, format!("\t应用权限失败：{filename} | {error}").as_str(), true, if writer_is_interactive { Some("red") } else { None });
 								// TODO: Fatal?
 							}
 						}
@@ -1562,21 +1567,21 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	if !args.skip_clear_chromiumcache {
 		let gmod_chromiumcache_path = pathbuf_to_canonical_pathbuf(extend_pathbuf_and_return(gmod_path.clone(), &["ChromiumCache"]), false);
 		if let Ok(gmod_chromiumcache_path) = gmod_chromiumcache_path {
-			terminal_write(writer, "\nClearing ChromiumCache...", true, None);
+			terminal_write(writer, "\n正在清理 ChromiumCache...", true, None);
 			if let Err(error) = tokio::fs::remove_dir_all(gmod_chromiumcache_path).await {
-				terminal_write(writer, format!("\tFailed: {error}\n\tYou may want to delete ChromiumCache from the GarrysMod directory manually!").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+				terminal_write(writer, format!("\t失败：{error}\n\t你可能需要手动删除 GarrysMod 目录中的 ChromiumCache！").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 			} else {
-				terminal_write(writer, "Done!", true, None);
+				terminal_write(writer, "完成！", true, None);
 			}
 		}
 
 		let gmod_chromiumcachemultirun_path = pathbuf_to_canonical_pathbuf(extend_pathbuf_and_return(gmod_path.clone(), &["ChromiumCacheMultirun"]), false);
 		if let Ok(gmod_chromiumcachemultirun_path) = gmod_chromiumcachemultirun_path {
-			terminal_write(writer, "\nClearing ChromiumCacheMultirun...", true, None);
+			terminal_write(writer, "\n正在清理 ChromiumCacheMultirun...", true, None);
 			if let Err(error) = tokio::fs::remove_dir_all(gmod_chromiumcachemultirun_path).await {
-				terminal_write(writer, format!("\tFailed: {error}\n\tYou may want to delete ChromiumCacheMultirun from the GarrysMod directory manually!").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+				terminal_write(writer, format!("\t失败：{error}\n\t你可能需要手动删除 GarrysMod 目录中的 ChromiumCacheMultirun！").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 			} else {
-				terminal_write(writer, "Done!", true, None);
+				terminal_write(writer, "完成！", true, None);
 			}
 		}
 	}
@@ -1585,20 +1590,21 @@ terminal_write(writer, format!("\t{secs_to_continue} 秒后继续...\r").as_str(
 	// TODO: Check dxlevel/d3d9ex support in Proton, and if there's anything we can do about it
 
 	let now = now.elapsed().as_secs_f64();
-	terminal_write(writer, format!("\nGModPatchTool applied successfully! Took {now} second(s).").as_str(), true, if writer_is_interactive { Some("green") } else { None });
+	terminal_write(writer, format!("\nGModPatchTool 应用成功！耗时 {now} 秒。").as_str(), true, if writer_is_interactive { Some("green") } else { None });
 
 	if args.launch_gmod {
-		terminal_write(writer, "Launching Garry's Mod...", true, if writer_is_interactive { Some("green") } else { None });
+		terminal_write(writer, "正在启动 Garry's Mod...", true, if writer_is_interactive { Some("green") } else { None });
 
 		let open_result = open::that("steam://rungameid/4000");
 		if let Err(error) = open_result {
-			terminal_write(writer, format!("\tFailed: {error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
+			terminal_write(writer, format!("\t启动失败：{error}").as_str(), true, if writer_is_interactive { Some("yellow") } else { None });
 		}
 	} else {
-		terminal_write(writer, "You can now launch Garry's Mod in Steam.", true, if writer_is_interactive { Some("green") } else { None });
+		terminal_write(writer, "现在你可以在 Steam 中启动 Garry's Mod 了。", true, if writer_is_interactive { Some("green") } else { None });
 	}
 
-	terminal_write(writer, "\n💖 Did you find this tool useful? Please consider donating a few dollars to help support it:", true, if writer_is_interactive { Some("magenta") } else { None });
+	terminal_write(writer, "\n💖 觉得这个工具有用吗？考虑捐助几块钱来支持我们吧：", true, if writer_is_interactive { Some("magenta") } else { None });
+	terminal_write(writer, "\n⚡ 汉化和镜像源由Xingpeng提供，CDN服务由大善人Cloudflare提供， C门！🙏", true, if writer_is_interactive { Some("magenta") } else { None });
 	terminal_write(writer, "\thttps://solsticegamestudios.com/donate/", true, None);
 
 	Ok(())
@@ -1614,7 +1620,7 @@ fn delete_pid_lockfile() {
 			if pid == std::process::id() {
 				let pid_remove_result = std::fs::remove_file(&pid_path);
 				if let Err(error) = pid_remove_result {
-					println!("Failed to remove gmodpatchtool.pid: {error}");
+					println!("删除 gmodpatchtool.pid 失败：{error}");
 				}
 			}
 		}
@@ -1622,7 +1628,7 @@ fn delete_pid_lockfile() {
 }
 
 fn terminal_exit_handler() {
-	println!("\nPress Enter to exit...");
+	println!("\n按回车键退出...");
 	std::io::stdin().read_line(&mut String::new()).unwrap();
 	delete_pid_lockfile();
 }
@@ -1632,7 +1638,7 @@ where
 	W: std::io::Write + 'static
 {
 	if args.skip_exit_prompt && !writer_is_interactive {
-		return Err(AlmightyError::Generic("Interactive tty is required without --skip-exit-prompt".into()));
+		return Err(AlmightyError::Generic("不使用 --skip-exit-prompt 时需要交互式终端".into()));
 	}
 
 	tokio::runtime::Builder::new_multi_thread()
@@ -1641,7 +1647,7 @@ where
 		// TODO: Report localconfig.vdf/config.vdf overflow: https://github.com/CosmicHorrorDev/vdf-rs/issues
 		.thread_stack_size(0x800000) // 8 MiB
 		.build()
-		.map_err(|error| AlmightyError::Generic(format!("Failed to create Tokio runtime: {error}")))?
+		.map_err(|error| AlmightyError::Generic(format!("无法创建 Tokio 运行时：{error}")))?
 		.block_on(
 			main_script_internal(writer, writer_is_interactive, args)
 		)
