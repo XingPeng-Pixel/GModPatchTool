@@ -10,19 +10,19 @@ use serde::ser::Serialize;
 #[derive(Parser, Debug)]
 #[command(version)]
 struct Args {
-	/// Path for Original files shipped with GMod
+	/// GMod 自带的原始文件路径
 	original_src: PathBuf,
 
-	/// Path for Fixed (already-patched) files
+	/// 已修补好的文件路径
 	fixed_src: PathBuf,
 
-	/// Path for where to put the output Patch (bsdiff) files
+	/// 输出补丁（bsdiff）文件的存放路径
 	patch_dest: PathBuf,
 
-	/// Path for where to copy the compressed versions of the Original files
+	/// 原始文件压缩版的存放路径
 	original_dest: PathBuf,
 
-	/// Path for where to copy the compressed versions of the Symbol files
+	/// 符号文件压缩版的存放路径
 	symbol_dest: PathBuf
 }
 
@@ -43,8 +43,8 @@ fn get_files_recursive(source: &str, path_base: String, files: &mut HashMap<Stri
 			} else if entry_path.is_file() {
 				// Files must sit under platform/branch/ or the manifest build misfiles them
 				if entry_relative_path_str.split("/").count() < 3 {
-					println!("Unexpected file outside a platform/branch directory: {}", entry_path.to_string_lossy());
-					println!("FATAL ERROR, EXITING...");
+					println!("意外发现 platform/branch 目录之外的文件：{}", entry_path.to_string_lossy());
+					println!("致命错误，即将退出...");
 					std::process::exit(1);
 				}
 
@@ -86,7 +86,7 @@ fn hash_diff_compress_file(patch_dest: PathBuf, filename: &String, file_paths: &
 	let fixed_hash = fixed_hash.unwrap();
 
 	if original_hash == fixed_hash {
-		return Err((false, "Skipped: Original hash matches Fixed hash".to_string()));
+		return Err((false, "已跳过：原始文件哈希与修补文件哈希一致".to_string()));
 	}
 
 	// Create patch file
@@ -108,7 +108,7 @@ fn hash_diff_compress_file(patch_dest: PathBuf, filename: &String, file_paths: &
 
 		// A git-lfs pointer means LFS wasn't checked out; diffing it would ship corruption to every user
 		if original.starts_with(b"version https://git-lfs") || fixed.starts_with(b"version https://git-lfs") {
-			return Err((true, "git-lfs pointer file (is git-lfs installed and checked out?)".to_string()));
+			return Err((true, "git-lfs 指针文件（是否已安装并检出 git-lfs？）".to_string()));
 		}
 
 		// Figure out if the fixed file is an executable, and if so, mark it
@@ -284,7 +284,7 @@ pub fn main() {
 
 	let original_src = original_src.unwrap();
 	let original_src_str = original_src.to_string_lossy();
-	println!("Original Path (Input): {original_src_str}\n");
+	println!("原始文件路径（输入）：{original_src_str}\n");
 
 	if let Err(fixed_src) = fixed_src {
 		cmd.error(
@@ -296,7 +296,7 @@ pub fn main() {
 
 	let fixed_src = fixed_src.unwrap();
 	let fixed_src_str = fixed_src.to_string_lossy();
-	println!("Fixed Path (Input): {fixed_src_str}\n");
+	println!("修补文件路径（输入）：{fixed_src_str}\n");
 
 	if let Err(patch_dest) = patch_dest {
 		cmd.error(
@@ -308,7 +308,7 @@ pub fn main() {
 
 	let patch_dest = patch_dest.unwrap();
 	let patch_dest_str = patch_dest.to_string_lossy();
-	println!("Patch Path (Output): {patch_dest_str}\n");
+	println!("补丁路径（输出）：{patch_dest_str}\n");
 
 	if let Err(original_dest) = original_dest {
 		cmd.error(
@@ -320,7 +320,7 @@ pub fn main() {
 
 	let original_dest = original_dest.unwrap();
 	let original_dest_str = original_dest.to_string_lossy();
-	println!("Original Compressed Path (Output): {original_dest_str}\n");
+	println!("原始压缩路径（输出）：{original_dest_str}\n");
 
 	if let Err(symbol_dest) = symbol_dest {
 		cmd.error(
@@ -332,12 +332,12 @@ pub fn main() {
 
 	let symbol_dest = symbol_dest.unwrap();
 	let symbol_dest_str = symbol_dest.to_string_lossy();
-	println!("Symbol Path (Output): {symbol_dest_str}\n");
+	println!("符号路径（输出）：{symbol_dest_str}\n");
 
 	if original_src == fixed_src {
 		cmd.error(
 			ErrorKind::ValueValidation,
-			"Original Source cannot match Fixed Source.",
+			"原始文件路径不能与修补文件路径相同。",
 		)
 		.exit();
 	}
@@ -345,7 +345,7 @@ pub fn main() {
 	if original_dest == fixed_src {
 		cmd.error(
 			ErrorKind::ValueValidation,
-			"Original Dest cannot match Fixed Source.",
+			"原始目标路径不能与修补源路径相同。",
 		)
 		.exit();
 	}
@@ -353,56 +353,56 @@ pub fn main() {
 	// The dest dirs get wiped with remove_dir_all, so none may overlap a source directory or another dest
 	for (dest_name, dest) in [("Patch Dest", &patch_dest), ("Original Dest", &original_dest), ("Symbol Dest", &symbol_dest)] {
 		if dest.starts_with(&original_src) || original_src.starts_with(dest) || dest.starts_with(&fixed_src) || fixed_src.starts_with(dest) {
-			cmd.error(ErrorKind::ValueValidation, format!("{dest_name} cannot overlap a source directory.")).exit();
+			cmd.error(ErrorKind::ValueValidation, format!("{dest_name} 不能与源目录重叠。")).exit();
 		}
 	}
 
 	if patch_dest.starts_with(&original_dest) || original_dest.starts_with(&patch_dest) || patch_dest.starts_with(&symbol_dest) || symbol_dest.starts_with(&patch_dest) || original_dest.starts_with(&symbol_dest) || symbol_dest.starts_with(&original_dest) {
-		cmd.error(ErrorKind::ValueValidation, "Patch, Original, and Symbol Dest must not overlap.").exit();
+		cmd.error(ErrorKind::ValueValidation, "补丁、原始和符号目标路径不能互相重叠。").exit();
 	}
 
 	let mut manifest_file_path = patch_dest.clone();
 	manifest_file_path.pop();
 	let manifest_file_path = extend_pathbuf_and_return(manifest_file_path, &["manifest.json"]);
 
-	println!("Deleting Old Patches Dir, Compressed Original Dir, and Manifest...");
+	println!("正在删除旧的补丁目录、原始压缩目录和清单文件...");
 
 	let remove_result = std::fs::remove_dir_all(&patch_dest);
 	if let Err(remove_result) = remove_result {
-		println!("Failed to remove old patches dir: {remove_result}");
+		println!("删除旧补丁目录失败：{remove_result}");
 	}
 
 	let create_result = std::fs::create_dir(&patch_dest);
 	if let Err(create_result) = create_result {
-		println!("Failed to create new patches dir: {create_result}");
+		println!("创建新补丁目录失败：{create_result}");
 	}
 
 	let remove_result = std::fs::remove_dir_all(&original_dest);
 	if let Err(remove_result) = remove_result {
-		println!("Failed to remove old original compressed dir: {remove_result}");
+		println!("删除旧原始压缩目录失败：{remove_result}");
 	}
 
 	let create_result = std::fs::create_dir(&original_dest);
 	if let Err(create_result) = create_result {
-		println!("Failed to create new original compressed dir: {create_result}");
+		println!("创建新原始压缩目录失败：{create_result}");
 	}
 
 	let remove_result = std::fs::remove_dir_all(&symbol_dest);
 	if let Err(remove_result) = remove_result {
-		println!("Failed to remove old symbol dir: {remove_result}");
+		println!("删除旧符号目录失败：{remove_result}");
 	}
 
 	let create_result = std::fs::create_dir(&symbol_dest);
 	if let Err(create_result) = create_result {
-		println!("Failed to create new symbol dir: {create_result}");
+		println!("创建新符号目录失败：{create_result}");
 	}
 
 	let remove_result = std::fs::remove_file(&manifest_file_path);
 	if let Err(remove_result) = remove_result {
-		println!("Failed to remove old manifest: {remove_result}");
+		println!("删除旧清单文件失败：{remove_result}");
 	}
 
-	println!("\n*** GENERATING PATCH FILES ***\n");
+	println!("\n*** 正在生成补丁文件 ***\n");
 
 	let mut files: HashMap<String, HashMap<String, PathBuf>> = HashMap::new();
 	get_files_recursive("original", "".to_string(), &mut files, original_src);
@@ -415,7 +415,7 @@ pub fn main() {
 
 		match result {
 			Ok((time, hashes)) => {
-				println!("\t{filename}\n\t\tTook {time} second(s)");
+				println!("\t{filename}\n\t\t耗时 {time} 秒");
 
 				let file_parts: Vec<&str> = filename.split("/").collect();
 				let platform = file_parts[0].to_string();
@@ -444,7 +444,7 @@ pub fn main() {
 				println!("\t{filename}\n\t\t{error_string}");
 
 				if fatal {
-					println!("\t\tFATAL ERROR, EXITING...\n");
+					println!("\t\t致命错误，即将退出...\n");
 					std::process::exit(1);
 				}
 			}
@@ -468,7 +468,7 @@ pub fn main() {
 
 	let manifest = manifest_guard.deref();
 
-	println!("\n*** GENERATING MANIFEST JSON ***\n");
+	println!("\n*** 正在生成清单 JSON ***\n");
 
 	// Replace the stupid double-space indentation with proper tabbed indentation
 	// Also add newline at the end to make Git happy
@@ -486,5 +486,5 @@ pub fn main() {
 	write_result.unwrap();
 
 	let now = now.elapsed().as_secs_f64();
-	println!("Patch generation complete! Took {now} second(s).");
+	println!("补丁生成完成！耗时 {now} 秒。");
 }

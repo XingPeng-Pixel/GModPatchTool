@@ -1,96 +1,104 @@
-# GModPatchTool <sub>_Formerly GModCEFCodecFix_</sub>
+# GModPatchTool <sub>_原名 GModCEFCodecFix_</sub>
 
 ![GModPatchTool](GModPatchToolLogo.png)
 
-***GModPatchTool** does what Facepunch [don't](https://github.com/Facepunch/gmod-html/pull/8)!*
+***GModPatchTool** 补上 Facepunch [没干的事](https://github.com/Facepunch/gmod-html/pull/8)！*
 
-**Created by Solstice Game Studios ([solsticegamestudios.com](https://solsticegamestudios.com))**
+**!! 由 Solstice Game Studios 制作 !!（[solsticegamestudios.com](https://solsticegamestudios.com)）**
 
-# 🛠️ Patches We Apply
-### All Platforms
-- Fixes various launch/missing main menu issues on macOS and Linux
-- Adds `-chromium_fps_max` Launch Option for GMod
-  - Allows setting a maximum internal FPS limit for ALL CEF web panels
-  - May improve game framerate in exchange for less web content framerate
-  - Default is 60
-- Adds `-chromium_remote_debugging_port` Launch Option for GMod
-  - Opt-in: starts CEF's Remote Debugging server (Chrome DevTools) on the given port so you can inspect in-game HTML panels
-  - Off by default; set a port between 1024 and 65535 to enable, e.g. `-chromium_remote_debugging_port 9222`
-- Adds `-chromium_mute_audio` Launch Option for GMod
-  - Opt-in: mutes ALL CEF web panel audio for that game instance
-  - Useful for running a second GMod instance (`-multirun`) without doubled-up sound
-- Improves the Legacy VGUI Theme with our custom SourceScheme.res
-- Replaces Debug/Console fonts with [PT Mono](https://fonts.google.com/specimen/PT+Mono) to improve consistency/readability across platforms
-  - This is particularly important for Proton, where text using those fonts is broken/tiny out of the box (no Lucida Console)
-  - If you don't like the theme changes or the font replacement, you can disable those patches by using the `--no-sourcescheme` argument when running the tool
 
-### In-Game Web Browser ([Chromium Embedded Framework, aka CEF](https://en.wikipedia.org/wiki/Chromium_Embedded_Framework))
-- Updates CEF to 137.0.19 (Chromium 137.0.7151.121)
-- Enables [Proprietary Video/Audio codec](https://www.chromium.org/audio-video), like H.264 (MP4) and AAC, support
-- Enables [Widevine](https://www.widevine.com) support (but [no VMP](https://github.com/solsticegamestudios/GModPatchTool/issues/100), so Netflix et al. don't work currently...)
-- Enables Software WebGL
-- Enables partial GPU acceleration
-- Improves performance for texture updates
-- Disables Hardware Media Keys control of media
-- Re-enables Site Isolation (security feature; some sites require it to function)
+**!! 由 Solstice Game Studios 制作 !!（[solsticegamestudios.com](https://solsticegamestudios.com)）**
+
+
+**!! 由 Solstice Game Studios 制作 !!（[solsticegamestudios.com](https://solsticegamestudios.com)）**
+
+我自己只是**提供了翻译和镜像源维护**（随心维护
+
+# 🛠️ 我们修补的内容
+### 全平台通用
+- 修复 macOS 和 Linux 上各种启动/主菜单消失的问题
+- 为 GMod 添加 `-chromium_fps_max` 启动选项
+  - 可限制所有 CEF 网页面板的内部最大帧率
+  - 适当降低网页内容帧率，可能提升游戏帧率
+  - 默认值为 60
+- 为 GMod 添加 `-chromium_remote_debugging_port` 启动选项
+  - 可选功能：在指定端口启动 CEF 远程调试服务（Chrome DevTools），方便检查游戏内 HTML 面板
+  - 默认关闭；在 1024 到 65535 之间设置端口号即可启用，例如 `-chromium_remote_debugging_port 9222`
+- 为 GMod 添加 `-chromium_mute_audio` 启动选项
+  - 可选功能：静音该游戏实例中所有 CEF 网页面板的音频
+  - 适合同时运行两个 GMod 实例（`-multirun`），避免声音重叠
+- 用自定义的 SourceScheme.res 改进经典 VGUI 主题
+- 将调试/控制台字体替换为 [PT Mono](https://fonts.google.com/specimen/PT+Mono)，提升跨平台的一致性和可读性
+  - 这对 Proton 尤为重要——原生字体（Lucida Console）在这些平台上显示不全或过小
+  - 如果不喜欢主题或字体修改，运行工具时加 `--no-sourcescheme` 参数即可禁用
+
+### 游戏内浏览器（[Chromium Embedded Framework，简称 CEF](https://en.wikipedia.org/wiki/Chromium_Embedded_Framework)）
+- 将 CEF 升级到 137.0.19（Chromium 137.0.7151.121）
+- 启用[专有音视频编码格式](https://www.chromium.org/audio-video)支持，如 H.264（MP4）和 AAC
+- 启用 [Widevine](https://www.widevine.com) 支持（但[没有 VMP](https://github.com/solsticegamestudios/GModPatchTool/issues/100)，所以 Netflix 等服务目前仍无法使用……）
+- 启用软件 WebGL
+- 启用部分 GPU 加速
+- 改进纹理更新的性能
+- 禁用硬件媒体键对媒体的控制
+- 重新启用站点隔离（安全特性，部分网站依赖此功能才能正常运行）
 
 ### Linux
-- Can fix Steam Overlay/MangoHud/etc not working
-  - Put `GMOD_ENABLE_LD_PRELOAD=1 %command%` in GMod's Launch Options to try it!
-  - This is disabled by default because it could just crash GMod instead
-- Sets `mesa_glthread=true` for more OpenGL performance with Mesa drivers
-- Sets `ulimit -n $(ulimit -Hn)` to fix issues opening/mounting many files (many addons, Lua autorefresh, etc)
-- Adds various commented exports to `hl2.sh` to help multi-GPU users quickly point GMod to use the correct GPU (typically Laptops)
-  - See [#188](https://github.com/solsticegamestudios/GModPatchTool/issues/188) for why we don't turn these on by default
+- 可修复 Steam 覆盖层、MangoHud 等不工作的问题
+  - 在 GMod 启动选项中加入 `GMOD_ENABLE_LD_PRELOAD=1 %command%` 试试！
+  - 默认关闭，因为有时反而会导致 GMod 崩溃
+- 设置 `mesa_glthread=true`，配合 Mesa 驱动提升 OpenGL 性能
+- 设置 `ulimit -n $(ulimit -Hn)`，修复大量文件打开/挂载的问题（比如很多插件、Lua 自动刷新等）
+- 在 `hl2.sh` 中添加各类带注释的环境变量导出，方便多 GPU 用户（通常是笔记本）快速指定 GMod 使用正确的显卡
+  - 见 [#188](https://github.com/solsticegamestudios/GModPatchTool/issues/188) 了解我们没有默认启用的原因
 
 ### macOS
-- Pre-warms [Rosetta](https://en.wikipedia.org/wiki/Rosetta_(software)) translations of the patched libraries on Apple Silicon so they don't stall GMod's first launch
-  - You can skip this by using the `--skip-rosetta-prewarm` argument when running the tool
+- 在 Apple Silicon 上提前预热已修补库的 [Rosetta](https://en.wikipedia.org/wiki/Rosetta_(software)) 翻译，避免它们拖慢 GMod 的首次启动
+  - 运行工具时加 `--skip-rosetta-prewarm` 参数即可跳过此步骤
 
-# ❓ Players: How to Install / Use
-Download the **[Latest Release](https://github.com/solsticegamestudios/GModPatchTool/releases)** and run the application.
+# ❓ 玩家：如何安装/使用
+下载 **[最新版](https://github.com/solsticegamestudios/GModPatchTool/releases)**，然后运行即可。
 
-Need a more in-depth guide? Take a look at https://solsticegamestudios.com/fixmedia/
+需要更详细的教程？请查看 https://solsticegamestudios.com/fixmedia/
 
-# ⚙️ Command Line Options
-You don't need any of these to patch normally - just run the tool. But if you want more control:
+# ⚙️ 命令行选项
+正常修补不需要任何参数——直接运行工具就行。但如果你想拥有更多控制权：
 
-| Option | What it does |
+| 选项 | 作用 |
 | --- | --- |
-| `-l`, `--launch-gmod` | Launch Garry's Mod after successfully patching |
-| `-s`, `--skip-exit-prompt` | Skip "Press Enter to exit..." on tool exit |
-| `--steam-path <PATH>` | Force a specific Steam install path (NOT a Steam library path) |
-| `--no-sourcescheme` | Don't apply SourceScheme (VGUI Theme) changes |
-| `--skip-clear-chromiumcache` | Skip deleting ChromiumCache/ChromiumCacheMultirun/chromium.log from the GarrysMod directory |
-| `--skip-rosetta-prewarm` | Skip pre-warming Rosetta translations of patched libraries on Apple Silicon (macOS only) |
-| `--disable-cache` | Force redownload all patch files from scratch and clear the GModPatchTool cache directory on exit |
-| `--no-system-proxy` | Don't use the OS proxy configuration for HTTP requests - try this if the tool can't download files behind a proxy/VPN |
-| `--ignore-gmod-running` | Apply patches even if Garry's Mod is currently running (may cause issues!) |
+| `-l`, `--launch-gmod` | 修补完成后启动 Garry's Mod |
+| `-s`, `--skip-exit-prompt` | 跳过退出时的"按 Enter 键退出..."提示 |
+| `--steam-path <路径>` | 指定 Steam 安装路径（不是 Steam 库路径） |
+| `--no-sourcescheme` | 不应用 SourceScheme（VGUI 主题）更改 |
+| `--skip-clear-chromiumcache` | 跳过删除 GarrysMod 目录下的 ChromiumCache/ChromiumCacheMultirun/chromium.log |
+| `--skip-rosetta-prewarm` | 跳过在 Apple Silicon 上预热已修补库的 Rosetta 翻译（仅 macOS） |
+| `--disable-cache` | 强制重新下载所有补丁文件，退出时清空 GModPatchTool 缓存目录 |
+| `--no-system-proxy` | 不使用系统代理进行 HTTP 请求——如果工具在代理/VPN 后无法下载文件可以试试这个 |
+| `--ignore-gmod-running` | 即使 Garry's Mod 正在运行也应用补丁（可能导致问题！） |
 
-The tool exits non-zero if patching fails, in case you're scripting around it.
+如果修补失败，工具会返回非零退出码，方便脚本化集成。
 
-# 👩‍💻 Developers: How to Use / Detect
-Direct players to follow the Players' instructions above. This patch is CLIENTSIDE only!
+# 👩‍💻 开发者：使用与检测
+让玩家直接参考上面"玩家"部分的说明即可。此补丁仅影响客户端！
 
-**To Detect Patched CEF:** Check out our [Lua detection example](examples/detection_example.lua).
+**如何检测已修补的 CEF：** 请查看我们的 [Lua 检测示例](examples/detection_example.lua)。
 
 > [!WARNING]
-> Our CEF builds have Site Isolation enabled, which means **you must pay attention to where you're calling JavaScript-related DHTML functions!**
+> 我们的 CEF 编译版本启用了站点隔离，这意味着 **调用 JavaScript 相关的 DHTML 函数时一定要注意时机！**
 >
-> If you call [DHTML.AddFunction](https://wiki.facepunch.com/gmod/DHTML:AddFunction), [DHTML.QueueJavascript](https://wiki.facepunch.com/gmod/DHTML:QueueJavascript), or [DHTML.RunJavascript](https://wiki.facepunch.com/gmod/Panel:RunJavascript) before the page begins loading, it WILL NOT WORK! Make sure you're calling them in [HTML.OnBeginLoadingDocument](https://wiki.facepunch.com/gmod/HTML:OnBeginLoadingDocument) or later.
+> 如果在页面开始加载之前调用 [DHTML.AddFunction](https://wiki.facepunch.com/gmod/DHTML:AddFunction)、[DHTML.QueueJavascript](https://wiki.facepunch.com/gmod/DHTML:QueueJavascript) 或 [DHTML.RunJavascript](https://wiki.facepunch.com/gmod/Panel:RunJavascript)，它们**不会生效**！请务必在 [HTML.OnBeginLoadingDocument](https://wiki.facepunch.com/gmod/HTML:OnBeginLoadingDocument) 或更晚的时候再调用。
 >
-> Site Isolation destroys JavaScript state on navigation like how real web browsers work.
+> 站点隔离会在导航时清除 JavaScript 状态，就像真正的浏览器那样。
 >
-> This tool includes a patch for mainmenu.lua that addresses GMod's own issues not using the correct approach, but **this is a breaking change** for any addon that doesn't handle HTML panel states properly for JS.
+> 本工具包含一个针对 mainmenu.lua 的补丁，解决了 GMod 自身没有使用正确方式调用的问题，但 **对于任何没有妥善处理 HTML 面板状态的插件来说，这是一个破坏性变更**。
 
-**If you want to go more in-depth:** Check out [our fork of gmod-html](https://github.com/solsticegamestudios/gmod-html) and [our CEF build scripts](cef_build).
+**想深入了解？** 查看[我们的 gmod-html 分支](https://github.com/solsticegamestudios/gmod-html)和 [CEF 构建脚本](cef_build)。
 
-# 📢 Need Help / Contact Us
-* Read the FAQ: https://solsticegamestudios.com/fixmedia/faq/
-* Discord: https://solsticegamestudios.com/discord/
-* Email: contact@solsticegamestudios.com
+# 📢 需要帮助 / 联系我们
+* 阅读常见问题：https://solsticegamestudios.com/fixmedia/faq/
+* Discord：https://solsticegamestudios.com/discord/
+* 邮箱：contact@solsticegamestudios.com
 
-# 💖 Help Support Us
-This project is open source and provided free of charge for the Garry's Mod community.
+# 💖 资助我们
+本项目是开源的，免费提供给 Garry's Mod 社区使用。
 
-**If you like what we're doing here, consider [throwing a few dollars our way](https://solsticegamestudios.com/donate/)!** Our work is 100% funded by users of the tool!
+**如果你喜欢我们的工作，不妨 [给我们打赏几美元](https://solsticegamestudios.com/donate/)！** 我们的一切工作 100% 来自工具用户的资助。

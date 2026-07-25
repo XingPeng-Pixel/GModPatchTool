@@ -15,17 +15,17 @@ const ABOUT: &str = r#"   ________  ___          ______        __       __  ____
  / / __/ /|_/ / __ \/ __  / /_/ / __ `/ __/ ___/ __ \/ / / __ \/ __ \/ /
 / /_/ / /  / / /_/ / /_/ / ____/ /_/ / /_/ /__/ / / / / / /_/ / /_/ / /
 \____/_/  /_/\____/\__,_/_/    \__,_/\__/\___/_/ /_/_/  \____/\____/_/
-GModPatchTool (formerly GModCEFCodecFix)
+GModPatchTool（原 GModCEFCodecFix）
 
-Copyright 2020-2026, Solstice Game Studios (solsticegamestudios.com)
-LICENSE: GNU General Public License v3.0
+版权所有 2020-2026，Solstice Game Studios（solsticegamestudios.com）
+许可证：GNU General Public License v3.0
 
-Purpose: Patches Garry's Mod to Update/Improve Chromium Embedded Framework (CEF) and Fix common launch/performance issues (esp. on Linux/Proton/macOS).
+用途：修补 Garry's Mod，更新/改进 Chromium Embedded Framework（CEF），修复常见的启动/性能问题（尤其在 Linux/Proton/macOS 上）。
 
-Guide: https://solsticegamestudios.com/fixmedia/
-FAQ/Common Issues: https://solsticegamestudios.com/fixmedia/faq/
-Discord: https://solsticegamestudios.com/discord/
-Email: contact@solsticegamestudios.com
+指南：https://solsticegamestudios.com/fixmedia/
+常见问题：https://solsticegamestudios.com/fixmedia/faq/
+Discord：https://solsticegamestudios.com/discord/
+邮箱：contact@solsticegamestudios.com
 "#;
 
 use std::io;
